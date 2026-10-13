@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Chroma Dino Runner | Arcade Dino Game</title>
+  <meta name="description" content="A modern, high-framerate Dino runner arcade game built with pure HTML, CSS, and JavaScript. Jump, duck, and dodge obstacles!">
+  
+  <!-- Modern & Arcade Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-theme="cyberpunk">
+  <div class="ambient-glow"></div>
+  
+  <div class="game-wrapper">
+    <!-- Top Header Bar -->
+    <header class="game-header">
+      <div class="brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+            <path d="M19 3H11v2h8v4h-2V7h-4V5H9v2H7v4H5v4h2v2h2v2h2v2h2v-2h2v-2h2v-2h2v-4h2V3h-2zm-6 4h2v2h-2V7z"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>CHROMA DINO</h1>
+          <span class="subtitle">NEON ARCADE RUNNER</span>
+        </div>
+      </div>
+
+      <!-- Quick Action Controls -->
+      <div class="header-actions">
+        <!-- Theme Selector -->
+        <div class="theme-dropdown-container">
+          <label for="theme-select" class="sr-only">Theme</label>
+          <select id="theme-select" class="control-select" aria-label="Select Game Theme">
+            <option value="cyberpunk" selected>⚡ Cyberpunk</option>
+            <option value="classic">🦖 Classic Retro</option>
+            <option value="synthwave">🌅 Synthwave Sunset</option>
+            <option value="emerald">🌿 Emerald Matrix</option>
+          </select>
+        </div>
+
+        <!-- Audio Mute Toggle -->
+        <button id="sound-btn" class="icon-btn" title="Toggle Sound (M)" aria-label="Toggle Sound">
+          <svg id="sound-icon-on" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+          </svg>
+          <svg id="sound-icon-off" class="hidden" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27l4.73 4.73H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+          </svg>
+        </button>
+
+        <!-- Pause / Resume Toggle -->
+        <button id="pause-btn" class="icon-btn" title="Pause / Resume (P)" aria-label="Pause Game">
+          <svg id="pause-icon" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+          </svg>
+          <svg id="play-icon" class="hidden" viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Game Canvas Container -->
+    <main class="game-viewport-card" id="game-card">
+      <!-- In-Game HUD overlay -->
+      <div class="canvas-hud">
+        <div class="hud-stat score-box">
+          <span class="hud-label">SCORE</span>
+          <span id="current-score" class="hud-digits">00000</span>
+        </div>
+        
+        <div class="hud-stat speed-box">
+          <span class="hud-label">SPEED</span>
+          <span id="speed-meter" class="hud-badge">1.0x</span>
+        </div>
+
+        <div class="hud-stat high-score-box">
+          <span class="hud-label">HI SCORE</span>
+          <span id="high-score" class="hud-digits gold-text">00000</span>
+        </div>
+      </div>
+
+      <!-- Canvas Element -->
+      <canvas id="dino-canvas" width="960" height="340"></canvas>
+
+      <!-- Overlay: Start Game Prompt -->
+      <div id="start-overlay" class="game-overlay active">
+        <div class="overlay-content pulse-glow">
+          <div class="pixel-dino-hero">
+            <svg viewBox="0 0 44 47" width="60" height="64" fill="currentColor">
+              <path d="M22 0h14v2h2v4h4v6h2v12h-2v2h-2v2h-2v2h-2v2h-2v2h-2v1h-2v2h-2v2h-2v2h-2v4h-4v-4h2v-4h2v-2h2v-2h-6v-2h-4v-2h-4v-4h2v2h2v2h4v-2h2v-4h2v-2h-6v-2h-4v-2H6v-2H4v-2H2v-2H0V8h2v2h2V8h2V6h2V4h2v4h2v2h2v2h2v-4h2V4h4V2h2V0zm10 4h2v2h-2V4z"/>
+            </svg>
+          </div>
+          <h2>READY TO RUN?</h2>
+          <p class="overlay-subtext">Dodge cacti, duck under pterodactyls, and beat your best score!</p>
+          <button id="start-trigger-btn" class="cta-button">
+            <span>PRESS SPACE OR CLICK TO START</span>
+          </button>
+          <div class="control-hints">
+            <span><kbd>SPACE</kbd> / <kbd>▲</kbd> Jump</span>
+            <span><kbd>▼</kbd> Duck / Dive</span>
+            <span><kbd>P</kbd> Pause</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overlay: Pause Screen -->
+      <div id="pause-overlay" class="game-overlay">
+        <div class="overlay-content">
+          <h2>GAME PAUSED</h2>
+          <p class="overlay-subtext">Take a breather, Runner!</p>
+          <button id="resume-btn" class="cta-button">RESUME GAME</button>
+          <div class="control-hints">
+            <span>Press <kbd>P</kbd> or <kbd>SPACE</kbd> to continue</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Overlay: Game Over Screen -->
+      <div id="gameover-overlay" class="game-overlay">
+        <div class="overlay-content gameover-box">
+          <div class="gameover-badge">GAME OVER</div>
+          <div class="results-grid">
+            <div class="result-tile">
+              <span class="tile-label">FINAL SCORE</span>
+              <span id="final-score" class="tile-val">00000</span>
+            </div>
+            <div class="result-tile highlight">
+              <span class="tile-label">BEST RUN</span>
+              <span id="final-best" class="tile-val">00000</span>
+            </div>
+            <div class="result-tile">
+              <span class="tile-label">JUMPS</span>
+              <span id="final-jumps" class="tile-val">0</span>
+            </div>
+            <div class="result-tile">
+              <span class="tile-label">TIME</span>
+              <span id="final-time" class="tile-val">00:00</span>
+            </div>
+          </div>
+          <div id="new-record-alert" class="new-record hidden">★ NEW HIGH SCORE! ★</div>
+          <button id="restart-btn" class="cta-button pulse">
+            <span>TRY AGAIN (SPACE)</span>
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Mobile & Touch Responsive Controls -->
+    <section class="touch-controls" id="touch-controls" aria-label="Touch Game Controls">
+      <button id="touch-duck-btn" class="touch-btn duck-btn" aria-label="Duck">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+          <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+        </svg>
+        <span>DUCK (▼)</span>
+      </button>
+
+      <button id="touch-jump-btn" class="touch-btn jump-btn" aria-label="Jump">
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor">
+          <path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6 1.41 1.41z"/>
+        </svg>
+        <span>JUMP (SPACE)</span>
+      </button>
+    </section>
+
+    <!-- Controls & Game Feature Info Footer -->
+    <footer class="game-footer">
+      <div class="instructions-pills">
+        <div class="pill">
+          <span class="pill-key">SPACE / ▲</span>
+          <span class="pill-desc">Jump (hold for higher jump)</span>
+        </div>
+        <div class="pill">
+          <span class="pill-key">▼</span>
+          <span class="pill-desc">Duck / Fast Fall</span>
+        </div>
+        <div class="pill">
+          <span class="pill-key">P</span>
+          <span class="pill-desc">Pause</span>
+        </div>
+        <div class="pill">
+          <span class="pill-key">M</span>
+          <span class="pill-desc">Mute SFX</span>
+        </div>
+      </div>
+      <p class="copyright-note">Built with pure Vanilla HTML5, CSS3, and JavaScript • High-DPI Canvas • Web Audio Synthesizer</p>
+    </footer>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
